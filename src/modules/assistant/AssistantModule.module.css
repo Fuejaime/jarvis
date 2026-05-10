@@ -2,7 +2,10 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  /* El main de App.jsx ya tiene padding-bottom = nav-height, así que el input se queda justo encima */
+  /* border-box: el paddingBottom que añadimos desde JS cuando el teclado
+     abre es INTERIOR al 100% de altura, encogiendo el área útil sin
+     desbordar el contenedor. Esto empuja el inputBar justo encima del teclado. */
+  box-sizing: border-box;
 }
 
 /* ─── Header ──────────────────────────────────────────────────────────────── */

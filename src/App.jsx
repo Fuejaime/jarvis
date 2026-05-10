@@ -18,24 +18,6 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Sincronizar altura del contenedor con el visualViewport.
-  // En iOS PWA, el layout viewport no se reduce al abrir el teclado;
-  // --vv-height refleja el área visible real para que el flex layout
-  // empuje el inputBar justo encima del teclado.
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    function update() {
-      document.documentElement.style.setProperty('--vv-height', `${vv.height}px`);
-    }
-
-    vv.addEventListener('resize', update);
-    update(); // valor inicial
-
-    return () => vv.removeEventListener('resize', update);
-  }, []);
-
   // Capturar token de GitHub tras el callback OAuth
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

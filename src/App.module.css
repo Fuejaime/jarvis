@@ -1,17 +1,11 @@
 /*
- * El contenedor principal sigue el alto del visualViewport en lugar del
- * layout viewport. Esto es crítico en iOS PWA: cuando el teclado abre,
- * el layout viewport no se mueve pero el visualViewport (área visible real)
- * sí se reduce. Con --vv-height el flex layout empuja el inputBar justo
- * encima del teclado sin gaps ni solapamientos.
+ * position: fixed + inset: 0 ancla el contenedor al viewport completo siempre.
+ * El ajuste al teclado se hace internamente en cada módulo (AssistantModule)
+ * usando visualViewport, sin tocar el contenedor raíz.
  */
 .app {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  /* Sigue el visualViewport; fallback 100% = 100vh en el primer render */
-  height: var(--vv-height, 100%);
+  inset: 0;
   display: flex;
   flex-direction: column;
   /* Empuja el contenido debajo del notch/Dynamic Island */

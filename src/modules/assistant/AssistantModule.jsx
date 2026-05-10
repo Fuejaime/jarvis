@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLLM } from '../../hooks/useLLM.js';
 import { useSTT } from '../../hooks/useSTT.js';
 import { useTTS } from '../../hooks/useTTS.js';
+import { useKeyboard } from '../../hooks/useKeyboard.js';
 import { saveChat, getChats } from '../../services/db.js';
 import styles from './AssistantModule.module.css';
 
@@ -18,6 +19,7 @@ export default function AssistantModule() {
   const { sendMessage, abort, streaming, error: llmError, getActiveProviderConfig } = useLLM();
   const { startListening, stopListening, listening, transcript, supported: sttSupported } = useSTT();
   const { speak, stop: stopTTS, speaking } = useTTS();
+  const { keyboardHeight } = useKeyboard();
 
   const [messages,     setMessages]     = useState([]);
   const [input,        setInput]        = useState('');
@@ -159,7 +161,10 @@ export default function AssistantModule() {
 
   // ─── Vista principal: chat ────────────────────────────────────────────────
   return (
-    <div className={styles.view}>
+    <div
+      className={styles.view}
+      style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : undefined}
+    >
       <header className={styles.header}>
         <h1 className={styles.headerTitle}>
           Jarvis
