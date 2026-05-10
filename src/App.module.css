@@ -1,8 +1,15 @@
+/*
+ * Usamos position: fixed + inset: 0 en lugar de height: 100dvh.
+ * Esto ancla el contenedor exactamente al viewport en todo momento,
+ * evitando el "salto" que ocurre en iOS PWA cuando el teclado
+ * entra o sale y dvh no se actualiza de forma síncrona.
+ */
 .app {
+  position: fixed;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  /* Empuja el contenido debajo del notch/Dynamic Island en iOS PWA */
+  /* Empuja el contenido debajo del notch/Dynamic Island */
   padding-top: env(safe-area-inset-top, 0px);
   overflow: hidden;
 }

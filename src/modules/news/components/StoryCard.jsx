@@ -62,36 +62,40 @@ export default function StoryCard({
   const confirmed  = swipeX > SWIPE_THRESHOLD;
   // Opacidad del fondo: crece con el desplazamiento, empieza en 0
   const bgOpacity  = Math.min(swipeX / SWIPE_MAX, 1) * 0.9;
+  // Sólo montar el swipeBg mientras hay movimiento activo — evita cualquier bleed-through
+  const showBg = swipeX > 0;
 
   return (
     <div className={styles.wrapper}>
 
-      {/* Fondo que aparece al deslizar — opacidad 0 por defecto (JS la controla) */}
-      <div
-        className={[
-          styles.swipeBg,
-          swipeAction === 'unread' ? styles.swipeBgUnread : '',
-          confirmed ? styles.swipeBgConfirmed : '',
-        ].join(' ')}
-        style={{ opacity: bgOpacity }}
-        aria-hidden="true"
-      >
-        {swipeAction === 'read' ? (
-          <>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <span>Leído</span>
-          </>
-        ) : (
-          <>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 12h14M9 6l-6 6 6 6"/>
-            </svg>
-            <span>No leída</span>
-          </>
-        )}
-      </div>
+      {/* Fondo que emerge al deslizar — solo existe en DOM durante el gesto */}
+      {showBg && (
+        <div
+          className={[
+            styles.swipeBg,
+            swipeAction === 'unread' ? styles.swipeBgUnread : '',
+            confirmed ? styles.swipeBgConfirmed : '',
+          ].join(' ')}
+          style={{ opacity: bgOpacity }}
+          aria-hidden="true"
+        >
+          {swipeAction === 'read' ? (
+            <>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>Leído</span>
+            </>
+          ) : (
+            <>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12h14M9 6l-6 6 6 6"/>
+              </svg>
+              <span>No leída</span>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Tarjeta principal */}
       <button

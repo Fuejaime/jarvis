@@ -58,7 +58,7 @@
   filter: brightness(0.96);
 }
 
-.read { opacity: 0.45; }
+/* .read ya no se usa — isRead=false siempre en el feed */
 
 /* Bookmark button — overlay absoluto en esquina superior derecha */
 .saveBtn {
