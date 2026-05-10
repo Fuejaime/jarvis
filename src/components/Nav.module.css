@@ -1,0 +1,55 @@
+/* Bottom nav bar — fija, glassmorphism, safe area aware */
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  display: flex;
+  align-items: flex-start; /* las tabs se alinean arriba, el safe-area queda abajo */
+  padding-top: 4px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid var(--border);
+  z-index: 200;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 0 4px;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+  /* Área de toque mínima recomendada por Apple: 44x44 */
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab:hover {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.tabActive {
+  color: var(--accent);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}

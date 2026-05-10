@@ -1,0 +1,15 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* El contenido ocupa el espacio sobrante por encima de la nav */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Deja espacio para la bottom nav */
+  padding-bottom: var(--nav-height);
+}

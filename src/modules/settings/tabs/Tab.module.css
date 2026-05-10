@@ -1,0 +1,345 @@
+/* Estilos compartidos por todos los tabs de Settings */
+
+.section {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  line-height: var(--line-height-loose);
+}
+
+.groupTitle {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+/* ─── Card ────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.cardEnabled {
+  border-color: var(--accent);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+}
+
+.cardTitle {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.localBadge {
+  margin-left: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--warn);
+  background: rgba(255, 159, 10, 0.12);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+}
+
+.activeBadge {
+  margin-left: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--ok);
+  background: rgba(52, 199, 89, 0.12);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+}
+
+.cardBody {
+  padding: 0 var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-4);
+}
+
+/* ─── Fields ──────────────────────────────────────────────────────────────── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fieldLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.fieldHint {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.input, .select, .textarea {
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-family: inherit;
+  font-size: var(--font-size-md);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.input:focus, .select:focus, .textarea:focus {
+  border-color: var(--accent);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: var(--line-height-base);
+}
+
+.inputRow {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.eyeBtn {
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-md);
+  flex-shrink: 0;
+}
+
+.range {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.rangeLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+/* ─── Segmented control ───────────────────────────────────────────────────── */
+.segmented {
+  display: flex;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 2px;
+}
+
+.segment {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  border-radius: calc(var(--radius-md) - 3px);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.segmentActive {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ─── Toggle ──────────────────────────────────────────────────────────────── */
+.toggle {
+  width: 50px;
+  height: 30px;
+  border-radius: 15px;
+  background: var(--bg-overlay);
+  position: relative;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.toggleOn {
+  background: var(--accent);
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.toggleOn .toggleThumb {
+  transform: translateX(20px);
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────────── */
+.setActiveBtn {
+  width: 100%;
+  padding: var(--space-3);
+  background: var(--accent-muted);
+  color: var(--accent);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  text-align: center;
+  transition: background 0.15s ease;
+}
+
+.setActiveBtn:hover { background: var(--accent); color: #fff; }
+
+.addBtn {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--accent);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  transition: background 0.15s;
+}
+
+.addBtn:hover { background: var(--accent-muted); }
+
+.row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: var(--space-3);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  text-align: center;
+}
+
+.saveBtn {
+  flex: 1;
+  padding: var(--space-3);
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ─── Feeds list ──────────────────────────────────────────────────────────── */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.feedItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.feedInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.feedName {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.feedUrl {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feedCategory {
+  font-size: var(--font-size-xs);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.feedActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: var(--radius-full);
+  color: var(--error);
+  transition: background 0.15s;
+}
+
+.deleteBtn:hover { background: rgba(255, 59, 48, 0.1); }
+
+/* ─── App info ────────────────────────────────────────────────────────────── */
+.appInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-6) 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
