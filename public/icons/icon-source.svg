@@ -1,6 +1,50 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'>
-  <rect width='512' height='512' rx='80' fill='%23141414'/>
-  <circle cx='256' cy='256' r='180' stroke='%23007AFF' stroke-width='28' fill='none'/>
-  <path d='M256 156v100l72 40' stroke='%23007AFF' stroke-width='28' stroke-linecap='round' stroke-linejoin='round'/>
-  <circle cx='400' cy='112' r='48' fill='%23007AFF'/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Blue background -->
+  <rect width="512" height="512" fill="#007AFF"/>
+
+  <!-- ── Outer helmet shell (white) ── -->
+  <path d="
+    M256,62
+    C172,62 104,118 90,202
+    L80,316
+    C80,380 122,440 164,460
+    L256,478
+    L348,460
+    C390,440 432,380 432,316
+    L422,202
+    C408,118 340,62 256,62 Z
+  " fill="white"/>
+
+  <!-- ── Face plate (near-black) ── -->
+  <path d="
+    M256,104
+    C190,104 140,144 130,212
+    L122,310
+    C122,360 154,412 188,430
+    L256,446
+    L324,430
+    C358,412 390,360 390,310
+    L382,212
+    C372,144 322,104 256,104 Z
+  " fill="#111111"/>
+
+  <!-- ── Left eye (white angled trapezoid) ── -->
+  <polygon points="128,264 218,240 218,282 128,306" fill="white"/>
+
+  <!-- ── Right eye (white angled trapezoid) ── -->
+  <polygon points="294,240 384,264 384,306 294,282" fill="white"/>
+
+  <!-- ── Chin / mouth area (white) ── -->
+  <path d="M208,355 L304,355 L292,430 L220,430 Z" fill="white"/>
+
+  <!-- ── Forehead center seam (white) ── -->
+  <rect x="249" y="104" width="14" height="92" fill="white"/>
+
+  <!-- ── Cheek vents left ── -->
+  <rect x="122" y="318" width="58" height="10" rx="5" fill="white" opacity="0.6"/>
+  <rect x="122" y="334" width="42" height="10" rx="5" fill="white" opacity="0.4"/>
+
+  <!-- ── Cheek vents right ── -->
+  <rect x="332" y="318" width="58" height="10" rx="5" fill="white" opacity="0.6"/>
+  <rect x="348" y="334" width="42" height="10" rx="5" fill="white" opacity="0.4"/>
 </svg>

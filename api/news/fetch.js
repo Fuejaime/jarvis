@@ -5,7 +5,6 @@
  * Body: { feeds: [{ id, name, url, category }], maxPerFeed?: number }
  *
  * Parsea RSS en el servidor (evita CORS) y devuelve artículos normalizados.
- * Puerto de rss-fetcher.js de HERALD; adaptado a ES modules + serverless.
  */
 
 import RssParser from 'rss-parser';
@@ -15,9 +14,12 @@ import iconv from 'iconv-lite';
 const parser = new RssParser({
   customFields: {
     item: [
-      ['media:content',   'mediaContent',   { keepArray: false }],
+      // media:content puede venir como array (multiple resoluciones) → keepArray:true
+      ['media:content',   'mediaContent',   { keepArray: true  }],
       ['media:thumbnail', 'mediaThumbnail', { keepArray: false }],
       ['enclosure',       'enclosure'],
+      // Algunos feeds usan media:group que envuelve media:content
+      ['media:group',     'mediaGroup',     { keepArray: false }],
     ],
   },
   timeout: 10_000,
@@ -48,19 +50,97 @@ function stripHtml(html = '') {
   return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * Extrae la primera URL de imagen real de un bloque HTML.
+ * Maneja comillas simples, dobles y atributos data-src (lazy load).
+ */
+function extractImageFromHtml(html = '') {
+  if (!html) return null;
+  // Prioridad: src → data-src (lazy load)
+  const patterns = [
+    /<img[^>]+\bsrc=["']([^"'>\s]+)["']/i,
+    /<img[^>]+\bdata-src=["']([^"'>\s]+)["']/i,
+    /<img[^>]+\bsrc=([^\s>"']+)/i,
+  ];
+  for (const re of patterns) {
+    const m = html.match(re);
+    if (m && m[1]) return m[1];
+  }
+  return null;
+}
+
+/** Comprueba si una URL de imagen es válida y no es un tracker/pixel */
+function isValidImage(url) {
+  if (!url || typeof url !== 'string') return false;
+  if (!url.startsWith('http')) return false;
+  const lower = url.toLowerCase();
+  // Filtrar píxeles de tracking y gifitos 1×1
+  if (/[_-]1x1|pixel|tracker|beacon|stat\.|analytics|doubleclick|counter\.gif/i.test(lower)) return false;
+  // Debe tener alguna extensión de imagen o parámetros propios de CDN
+  // (muchas CDN no tienen extensión en la URL — no filtrar por extensión)
+  return true;
+}
+
+/**
+ * Extrae la mejor imagen de un item RSS usando todos los campos disponibles,
+ * con fallback a la primera <img> del contenido HTML.
+ */
+function extractImage(item) {
+  // 1. media:content (puede ser array de resoluciones)
+  if (item.mediaContent) {
+    const list = Array.isArray(item.mediaContent) ? item.mediaContent : [item.mediaContent];
+    // Preferir las marcadas como medium="image", o las que tengan mayor ancho
+    const sorted = list
+      .filter(m => m?.$ && isValidImage(m.$.url))
+      .sort((a, b) => {
+        const wa = parseInt(a.$.width  || '0', 10);
+        const wb = parseInt(b.$.width  || '0', 10);
+        return wb - wa; // mayor resolución primero
+      });
+    if (sorted.length > 0) return sorted[0].$.url;
+  }
+
+  // 2. media:thumbnail
+  if (item.mediaThumbnail?.$.url && isValidImage(item.mediaThumbnail.$.url)) {
+    return item.mediaThumbnail.$.url;
+  }
+
+  // 3. media:group → media:content dentro del grupo
+  if (item.mediaGroup) {
+    const gc = item.mediaGroup['media:content'];
+    const gcArr = Array.isArray(gc) ? gc : (gc ? [gc] : []);
+    const found = gcArr.find(m => isValidImage(m?.$.url));
+    if (found) return found.$.url;
+  }
+
+  // 4. enclosure (podcasts y feeds que adjuntan la imagen como enclosure)
+  if (item.enclosure?.url && isValidImage(item.enclosure.url)) {
+    const url = item.enclosure.url;
+    if (/\.(jpe?g|png|webp|gif|avif)(\?|$)/i.test(url)) return url;
+  }
+
+  // 5. itunes:image
+  if (item.itunes?.image && isValidImage(item.itunes.image)) {
+    return item.itunes.image;
+  }
+
+  // 6. Fallback: primera <img> del contenido HTML (content:encoded → item.content)
+  const htmlSources = [item.content, item['content:encoded'], item.summary, item.description];
+  for (const html of htmlSources) {
+    const url = extractImageFromHtml(html);
+    if (url && isValidImage(url)) return url;
+  }
+
+  return null;
+}
+
 /** Normaliza un item RSS a un objeto consistente */
 function normalizeItem(item, feed) {
-  let image = null;
-  if (item.mediaContent?.$.url)       image = item.mediaContent.$.url;
-  else if (item.mediaThumbnail?.$.url) image = item.mediaThumbnail.$.url;
-  else if (item.enclosure?.url)        image = item.enclosure.url;
-  else if (item.itunes?.image)         image = item.itunes.image;
-
   return {
     id:          `${feed.id}::${item.guid || item.link || item.title || Date.now()}`,
     title:       (item.title || '').trim(),
     url:         item.link  || item.guid || '',
-    image,
+    image:       extractImage(item),
     date:        item.isoDate || item.pubDate || new Date().toISOString(),
     source:      feed.name,
     sourceId:    feed.id,
@@ -78,7 +158,6 @@ async function fetchFeed(feed, maxPerFeed) {
 // ─── Handler Vercel ────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
-  // CORS preflight
   res.setHeader('Access-Control-Allow-Origin',  '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -100,11 +179,9 @@ export default async function handler(req, res) {
     const settled = await Promise.allSettled(batch.map(f => fetchFeed(f, maxPerFeed)));
     for (const r of settled) {
       if (r.status === 'fulfilled') articles.push(...r.value);
-      // Los feeds que fallan se ignoran silenciosamente
     }
   }
 
-  // Ordenar por fecha descendente
   articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   return res.status(200).json({ articles, fetchedAt: new Date().toISOString() });

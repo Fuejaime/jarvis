@@ -8,16 +8,33 @@ import { useSettingsStore } from './store/settingsStore.js';
 import styles from './App.module.css';
 
 export default function App() {
-  const theme = useSettingsStore(s => s.theme);
+  const theme         = useSettingsStore(s => s.theme);
+  const setGithubAuth = useSettingsStore(s => s.setGithubAuth);
 
   // Sincronizar tema con el DOM
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  // Capturar token de GitHub tras el callback OAuth
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const githubToken = params.get('github_token');
+    const githubUser  = params.get('github_user');
+    const authError   = params.get('auth_error');
+
+    if (githubToken && githubUser) {
+      setGithubAuth(githubToken, githubUser);
+      // Limpiar la URL para no exponer el token en el historial del navegador
+      window.history.replaceState({}, '', '/');
+    } else if (authError) {
+      console.error('GitHub OAuth error:', decodeURIComponent(authError));
+      window.history.replaceState({}, '', '/');
+    }
+  }, []); // Solo al montar
+
   return (
     <div className={styles.app}>
-      {/* Área de contenido principal — scroll independiente por módulo */}
       <main className={styles.content}>
         <Routes>
           <Route path="/" element={<Navigate to="/news" replace />} />
@@ -28,7 +45,6 @@ export default function App() {
         </Routes>
       </main>
 
-      {/* Barra de navegación inferior fija (mobile-first) */}
       <Nav />
     </div>
   );

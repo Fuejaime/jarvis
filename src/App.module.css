@@ -2,12 +2,16 @@
   display: flex;
   flex-direction: column;
   height: 100dvh;
+  /* Empuja el contenido debajo del notch/Dynamic Island en iOS PWA */
+  padding-top: env(safe-area-inset-top, 0px);
   overflow: hidden;
 }
 
 /* El contenido ocupa el espacio sobrante por encima de la nav */
 .content {
   flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   /* Deja espacio para la bottom nav */

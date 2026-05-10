@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
+import { Readability } from '@mozilla/readability';
 import styles from './ArticleReader.module.css';
 import { useSettingsStore } from '../../../store/settingsStore.js';
 
 /**
  * ArticleReader — Vista de lectura de un artículo individual.
  *
- * Llama /api/news/article para extraer el contenido limpio con Readability.
- * Botón TTS para escuchar el artículo (via Web Speech API).
+ * El backend solo hace fetch del HTML (proxy CORS).
+ * El parseo con Readability se hace aquí con DOMParser (browser nativo).
  */
 export default function ArticleReader({ article, onBack }) {
   const ttsEnabled = useSettingsStore(s => s.ttsEnabled);
@@ -26,14 +27,31 @@ export default function ArticleReader({ article, onBack }) {
       setLoading(true);
       setError(null);
       try {
+        // 1. Backend hace el fetch evitando CORS
         const res = await fetch('/api/news/article', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({ url: article.url }),
         });
         if (!res.ok) throw new Error(`Error ${res.status}`);
-        const data = await res.json();
-        if (!cancelled) setContent(data);
+        const { html, url } = await res.json();
+
+        // 2. Parsear HTML con DOMParser (browser nativo, sin dependencias)
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+
+        // 3. Extraer contenido limpio con Readability
+        const reader  = new Readability(doc, { url });
+        const parsed  = reader.parse();
+
+        if (!parsed) throw new Error('No se pudo extraer el contenido del artículo');
+
+        // Añadir referrerpolicy="no-referrer" a todas las imágenes del cuerpo
+        // para evitar bloqueos de hotlink (Applesfera y otros usan el Referer)
+        if (parsed.content) {
+          parsed.content = parsed.content.replace(/<img\b/gi, '<img referrerpolicy="no-referrer"');
+        }
+
+        if (!cancelled) setContent(parsed);
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {
@@ -66,11 +84,10 @@ export default function ArticleReader({ article, onBack }) {
     const text = content?.textContent || article.description || article.title;
     if (!text) return;
 
-    const utter    = new SpeechSynthesisUtterance(text);
-    utter.lang     = 'es-ES';
-    utter.rate     = 1.05;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang  = 'es-ES';
+    utter.rate  = 1.05;
 
-    // Intentar usar la voz configurada
     if (ttsVoice) {
       const voices = window.speechSynthesis.getVoices();
       const voice  = voices.find(v => v.name === ttsVoice);
@@ -142,7 +159,7 @@ export default function ArticleReader({ article, onBack }) {
 
         {error && (
           <div className={styles.error}>
-            <p>No se pudo cargar el artículo: {error}</p>
+            <p>No se pudo cargar el artículo.</p>
             <a href={article.url} target="_blank" rel="noopener noreferrer" className={styles.openLink}>
               Abrir en el navegador →
             </a>
@@ -152,7 +169,7 @@ export default function ArticleReader({ article, onBack }) {
         {content && !loading && (
           <>
             {article.image && (
-              <img src={article.image} alt="" className={styles.hero} loading="eager" />
+              <img src={article.image} alt="" className={styles.hero} loading="eager" referrerPolicy="no-referrer" />
             )}
 
             <div className={styles.meta}>
@@ -169,7 +186,6 @@ export default function ArticleReader({ article, onBack }) {
 
             <h1 className={styles.title}>{content.title || article.title}</h1>
 
-            {/* El HTML de Readability ya viene sanitizado */}
             <div
               className={styles.body}
               dangerouslySetInnerHTML={{ __html: content.content }}

@@ -17,7 +17,24 @@
 
 import axios from 'axios';
 
-const CLOUD_PROVIDERS = new Set(['openai', 'anthropic', 'groq', 'openrouter']);
+const CLOUD_PROVIDERS = new Set(['openai', 'anthropic', 'groq', 'openrouter', 'copilot']);
+
+function buildHeaders(provider) {
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${provider.apiKey}`,
+  };
+  if (provider.id === 'openrouter') {
+    headers['HTTP-Referer'] = 'https://jarvis.app';
+    headers['X-Title']      = 'Jarvis';
+  }
+  if (provider.id === 'copilot') {
+    headers['Editor-Version']        = 'vscode/1.85.1';
+    headers['Editor-Plugin-Version'] = 'copilot-chat/0.11.1';
+    headers['Openai-Organization']   = 'github-copilot';
+  }
+  return headers;
+}
 
 function buildMessages(type, data) {
   if (type === 'briefing') {
@@ -51,21 +68,10 @@ function buildMessages(type, data) {
 }
 
 async function callOpenAICompat(provider, messages) {
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${provider.apiKey}`,
-  };
-
-  // OpenRouter requiere cabecera extra
-  if (provider.id === 'openrouter') {
-    headers['HTTP-Referer'] = 'https://jarvis.app';
-    headers['X-Title']      = 'Jarvis';
-  }
-
   const res = await axios.post(
     `${provider.baseUrl}/chat/completions`,
     { model: provider.model, messages },
-    { headers, timeout: 25_000 }
+    { headers: buildHeaders(provider), timeout: 25_000 }
   );
   return res.data.choices?.[0]?.message?.content || '';
 }

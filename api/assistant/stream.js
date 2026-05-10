@@ -21,6 +21,9 @@ import axios from 'axios';
 
 const LOCAL_PROVIDERS = new Set(['ollama', 'lmstudio', 'mlx']);
 
+// Copilot usa la misma ruta OpenAI pero con baseUrl distinta y headers extra
+const OPENAI_COMPAT = new Set(['openai', 'groq', 'openrouter', 'copilot']);
+
 function buildHeaders(provider) {
   const headers = { 'Content-Type': 'application/json' };
 
@@ -34,6 +37,13 @@ function buildHeaders(provider) {
   if (provider.id === 'openrouter') {
     headers['HTTP-Referer'] = 'https://jarvis.app';
     headers['X-Title']      = 'Jarvis';
+  }
+
+  // GitHub Copilot requiere cabeceras adicionales para identificar el editor
+  if (provider.id === 'copilot') {
+    headers['Editor-Version']        = 'vscode/1.85.1';
+    headers['Editor-Plugin-Version'] = 'copilot-chat/0.11.1';
+    headers['Openai-Organization']   = 'github-copilot';
   }
 
   return headers;
@@ -190,6 +200,7 @@ export default async function handler(req, res) {
     const status = err.response?.status;
     let msg = err.message;
     if (status === 401 || status === 403) msg = 'API key inválida o sin permisos.';
+    if (status === 402)                   msg = 'Sin créditos en el provider. Recarga saldo o usa Groq (gratuito).';
     if (status === 429)                   msg = 'Rate limit alcanzado. Espera un momento.';
     sseError(res, msg);
   }

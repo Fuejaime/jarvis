@@ -4,13 +4,11 @@
  * POST /api/news/article
  * Body: { url: string }
  *
- * Descarga el artículo y extrae el contenido limpio con Mozilla Readability.
- * Devuelve: { title, byline, content, textContent, excerpt, siteName, publishedTime }
+ * Solo hace el fetch del HTML (evita CORS desde el iPhone).
+ * El parseo con Readability se hace en el browser con DOMParser.
  */
 
 import axios from 'axios';
-import { JSDOM } from 'jsdom';
-import { Readability } from '@mozilla/readability';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin',  '*');
@@ -27,30 +25,16 @@ export default async function handler(req, res) {
     const response = await axios.get(url, {
       timeout: 12_000,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        'Accept':     'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
       },
-      // Limitar el tamaño de respuesta para no agotar la función
-      maxContentLength: 5 * 1024 * 1024, // 5 MB
+      maxContentLength: 5 * 1024 * 1024,
+      // Devolver como texto directamente
+      responseType: 'text',
     });
 
-    const dom     = new JSDOM(response.data, { url });
-    const reader  = new Readability(dom.window.document);
-    const article = reader.parse();
-
-    if (!article) {
-      return res.status(422).json({ error: 'Could not extract article content' });
-    }
-
-    return res.status(200).json({
-      title:         article.title || '',
-      byline:        article.byline || '',
-      content:       article.content || '',      // HTML sanitizado
-      textContent:   article.textContent || '',  // texto plano
-      excerpt:       article.excerpt || '',
-      siteName:      article.siteName || '',
-      publishedTime: article.publishedTime || null,
-    });
+    return res.status(200).json({ html: response.data, url });
   } catch (err) {
     const status = err.response?.status || 500;
     return res.status(status).json({ error: err.message });

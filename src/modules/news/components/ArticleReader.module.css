@@ -46,6 +46,9 @@
 /* ─── Article ─────────────────────────────────────────────────────────────── */
 .article {
   padding: 0 var(--space-4) var(--space-8);
+  overflow-x: hidden;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .hero {
@@ -91,12 +94,41 @@
   font-size: var(--font-size-md);
   line-height: var(--line-height-loose);
   color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+/* Contener todo elemento que pueda ser más ancho que la pantalla */
+.body * {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .body p   { margin: 0 0 var(--space-4); }
 .body h2  { font-size: var(--font-size-lg); font-weight: 700; margin: var(--space-6) 0 var(--space-2); }
 .body h3  { font-size: var(--font-size-md); font-weight: 600; margin: var(--space-4) 0 var(--space-2); }
-.body img { width: 100%; border-radius: var(--radius-md); margin: var(--space-4) 0; }
+.body img {
+  width: 100% !important;
+  height: auto !important;
+  border-radius: var(--radius-md);
+  margin: var(--space-4) 0;
+}
+.body iframe {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
+  border: none;
+  border-radius: var(--radius-md);
+  margin: var(--space-4) 0;
+}
+.body table {
+  display: block;
+  width: 100% !important;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+.body td, .body th { padding: var(--space-2); border: 1px solid var(--border); }
 .body a   { color: var(--accent); }
 .body blockquote {
   margin: var(--space-4) 0;
@@ -113,7 +145,13 @@
   background: var(--bg-elevated);
   border-radius: var(--radius-sm);
 }
-.body pre { padding: var(--space-3); overflow-x: auto; }
+.body pre {
+  padding: var(--space-3);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
 .body code { padding: 1px 4px; }
 
 /* ─── Loading / Error ─────────────────────────────────────────────────────── */

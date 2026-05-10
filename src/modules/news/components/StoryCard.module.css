@@ -1,44 +1,118 @@
+/* StoryCard — imagen full-width + cuerpo vertical */
+
+/* Wrapper para el swipe-to-read */
+.wrapper {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  /* Fuerza que el swipeBg quede contenido */
+}
+
+/* Fondo que emerge al deslizar — opacidad controlada por JS (empieza en 0) */
+.swipeBg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-left: var(--space-5);
+  background: var(--ok);
+  color: #fff;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  border-radius: var(--radius-xl);
+  /* Sin opacity aquí — la controla el inline style del componente */
+  transition: background 0.15s;
+}
+
+/* Variante para "marcar como no leída" */
+.swipeBgUnread {
+  background: var(--accent);
+}
+
+/* Estado confirmado (>80px): color más intenso */
+.swipeBgConfirmed {
+  background: #28a745;
+}
+
+.swipeBgUnread.swipeBgConfirmed {
+  background: #0055cc;
+}
+
+/* Tarjeta principal */
 .card {
+  position: relative;
   width: 100%;
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  flex-direction: column;
   background: var(--bg-surface);
   border-radius: var(--radius-xl);
   border: 1px solid var(--border);
   text-align: left;
-  transition: background 0.12s ease, transform 0.1s ease;
+  overflow: hidden;
   -webkit-tap-highlight-color: transparent;
+  will-change: transform;
 }
 
 .card:active {
-  background: var(--bg-hover);
-  transform: scale(0.98);
+  filter: brightness(0.96);
 }
 
 .read { opacity: 0.45; }
 
-.image {
-  width: 80px;
-  height: 80px;
+/* Bookmark button — overlay absoluto en esquina superior derecha */
+.saveBtn {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  z-index: 2;
+}
+
+.saveBtn:active {
+  transform: scale(0.9);
+}
+
+.saveBtnActive {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Imagen hero — full-width, proporción fija 16:9 */
+.hero {
+  width: 100%;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
-  border-radius: var(--radius-md);
+  display: block;
+  /* Evitar que se estire verticalmente */
   flex-shrink: 0;
 }
 
+/* Cuerpo de texto */
 .body {
-  flex: 1;
-  overflow: hidden;
+  padding: var(--space-3) var(--space-4) var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  min-width: 0;
 }
 
+/* Meta: categoría + count */
 .meta {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
 .category {
@@ -57,10 +131,11 @@
   border-radius: var(--radius-full);
 }
 
+/* Título */
 .title {
   margin: 0;
   font-size: var(--font-size-md);
-  font-weight: 600;
+  font-weight: 700;
   line-height: var(--line-height-tight);
   color: var(--text-primary);
   display: -webkit-box;
@@ -69,17 +144,37 @@
   overflow: hidden;
 }
 
-.summary {
+/* Bloque de Resumen IA */
+.aiBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--accent-muted);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.aiLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.aiText {
   margin: 0;
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
   line-height: var(--line-height-base);
+  color: var(--text-primary);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+/* Footer */
 .footer {
   display: flex;
   align-items: center;
@@ -94,6 +189,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
+  min-width: 0;
 }
 
 .date {
@@ -101,12 +197,4 @@
   color: var(--text-muted);
   flex-shrink: 0;
   margin-left: var(--space-2);
-}
-
-.chevron {
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  margin-top: var(--space-1);
 }
