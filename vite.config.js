@@ -25,6 +25,9 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Activate new SW immediately without waiting for app to be closed
+        skipWaiting: true,
+        clientsClaim: true,
         // Assets estáticos: cache-first (largo plazo)
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         // Llamadas a /api/news/*: stale-while-revalidate (contenido fresco pero rápido)
