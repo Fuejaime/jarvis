@@ -7,10 +7,12 @@ export default function handler(req, res) {
   const p = process.env.AUTH_PASSWORD ?? '';
   const s = process.env.AUTH_SECRET   ?? '';
 
-  // Solo expone longitudes y primeros/últimos caracteres, nunca el valor completo
+  // Muestra char codes para detectar caracteres invisibles / encoding raro
+  const charCodes = (str) => [...str].map(c => c.charCodeAt(0));
+
   res.json({
-    AUTH_USERNAME: { set: !!u, length: u.length, first: u[0] ?? null, last: u[u.length - 1] ?? null },
-    AUTH_PASSWORD: { set: !!p, length: p.length, first: p[0] ?? null, last: p[p.length - 1] ?? null },
-    AUTH_SECRET:   { set: !!s, length: s.length },
+    AUTH_USERNAME: { length: u.length, chars: charCodes(u) },
+    AUTH_PASSWORD: { length: p.length, chars: charCodes(p) },
+    AUTH_SECRET:   { length: s.length },
   });
 }
