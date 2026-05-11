@@ -1,17 +1,20 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import Nav from './components/Nav.jsx';
+import LoginScreen from './components/LoginScreen.jsx';
 import NewsModule from './modules/news/NewsModule.jsx';
 import AssistantModule from './modules/assistant/AssistantModule.jsx';
 import SettingsModule from './modules/settings/SettingsModule.jsx';
 import { useSettingsStore } from './store/settingsStore.js';
 import { useKeyboard } from './hooks/useKeyboard.js';
+import { useAuth } from './hooks/useAuth.js';
 import styles from './App.module.css';
 
 export default function App() {
   const theme         = useSettingsStore(s => s.theme);
   const setGithubAuth = useSettingsStore(s => s.setGithubAuth);
   const { keyboardOpen } = useKeyboard();
+  const { authenticated, loading, login } = useAuth();
   const appRef = useRef(null);
 
   // Sincronizar tema con el DOM
@@ -71,6 +74,16 @@ export default function App() {
       el.style.transform = '';
     };
   }, []);
+
+  // Auth gate: pantalla de carga y login antes de mostrar la app
+  if (loading) {
+    // Splash mínimo mientras se verifica el token (evita flash del login)
+    return <div className={styles.splash} />;
+  }
+
+  if (!authenticated) {
+    return <LoginScreen onLogin={login} />;
+  }
 
   return (
     <div ref={appRef} className={styles.app}>

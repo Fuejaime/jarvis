@@ -1,3 +1,10 @@
+/* Pantalla de carga mínima mientras se verifica el token */
+.splash {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-base);
+}
+
 /*
  * position: fixed + inset: 0 ancla el contenedor al viewport completo siempre.
  * El ajuste al teclado se hace internamente en cada módulo (AssistantModule)
