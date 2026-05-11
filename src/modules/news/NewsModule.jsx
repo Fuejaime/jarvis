@@ -215,6 +215,10 @@ export default function NewsModule() {
   // ─── Swipe back ───────────────────────────────────────────────────────────
   const swipeBackProps = useSwipeBack(handleBack, !!(openCluster || openArticle));
 
+  // ─── Pull-to-refresh (debe estar antes de cualquier return condicional) ───
+  const { containerRef: pullRef, pullDistance, isTriggered, isRefreshing: isPullRefreshing }
+    = usePullToRefresh(refresh, activeTab !== 'saved' && !openCluster && !openArticle);
+
   // ─── Vista: lector de artículo ──────────────────────────────────────────
   if (openArticle) {
     return (
@@ -323,10 +327,6 @@ export default function NewsModule() {
       </div>
     );
   }
-
-  // ─── Pull-to-refresh ──────────────────────────────────────────────────────
-  const { containerRef: pullRef, pullDistance, isTriggered, isRefreshing: isPullRefreshing }
-    = usePullToRefresh(refresh, activeTab !== 'saved');
 
   // ─── Vista principal: feed ─────────────────────────────────────────────────
   const emptyMessages = {
