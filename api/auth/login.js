@@ -7,23 +7,11 @@
  * Variables de entorno requeridas en Vercel:
  *   AUTH_USERNAME — nombre de usuario
  *   AUTH_PASSWORD — contraseña
- *   AUTH_SECRET   — cadena aleatoria larga (actúa como clave de firma)
+ *   AUTH_SECRET   — cadena aleatoria larga (clave de firma)
  */
 import crypto from 'crypto';
 
-/** Comparación en tiempo constante para evitar timing attacks */
-function safeEqual(a, b) {
-  const bufA = Buffer.from(String(a));
-  const bufB = Buffer.from(String(b));
-  if (bufA.length !== bufB.length) {
-    // Comparar igualmente para no filtrar longitud
-    crypto.timingSafeEqual(bufA, bufA);
-    return false;
-  }
-  return crypto.timingSafeEqual(bufA, bufB);
-}
-
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -36,21 +24,42 @@ export default function handler(req, res) {
     });
   }
 
-  const { username = '', password = '' } = req.body ?? {};
+  // Parsear body — Vercel a veces entrega string en lugar de objeto
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch { body = {}; }
+  }
+  body = body ?? {};
 
-  const userOk = safeEqual(username, AUTH_USERNAME);
-  const passOk = safeEqual(password, AUTH_PASSWORD);
+  // Trim para evitar problemas con espacios accidentales
+  const username = String(body.username ?? '').trim();
+  const password = String(body.password ?? '').trim();
+  const envUser  = AUTH_USERNAME.trim();
+  const envPass  = AUTH_PASSWORD.trim();
+
+  // Comparación en tiempo constante para evitar timing attacks
+  // timingSafeEqual requiere buffers de igual longitud
+  function safeEqual(a, b) {
+    const ba = Buffer.from(a, 'utf8');
+    const bb = Buffer.from(b, 'utf8');
+    if (ba.length !== bb.length) {
+      // Ejecutar igualmente para no filtrar info por tiempo
+      crypto.timingSafeEqual(ba, ba);
+      return false;
+    }
+    return crypto.timingSafeEqual(ba, bb);
+  }
+
+  const userOk = safeEqual(username, envUser);
+  const passOk = safeEqual(password, envPass);
 
   if (!userOk || !passOk) {
-    // Mismo mensaje para no filtrar si falla usuario o contraseña
     return res.status(401).json({ error: 'Credenciales incorrectas' });
   }
 
-  // Token determinista: HMAC-SHA256(username, secret)
-  // No tiene expiración intencionalmente (app personal, sesión permanente).
   const token = crypto
-    .createHmac('sha256', AUTH_SECRET)
-    .update(AUTH_USERNAME)
+    .createHmac('sha256', AUTH_SECRET.trim())
+    .update(envUser)
     .digest('hex');
 
   return res.status(200).json({ token });

@@ -3,10 +3,6 @@
  *
  * Body: { token }
  * Returns: { ok: true } | 401
- *
- * Verifica que el token almacenado en el cliente sea válido.
- * Se llama al iniciar la app para evitar que alguien ponga cualquier
- * valor en localStorage y acceda.
  */
 import crypto from 'crypto';
 
@@ -21,11 +17,16 @@ export default function handler(req, res) {
     return res.status(500).json({ error: 'Auth no configurado' });
   }
 
-  const { token = '' } = req.body ?? {};
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch { body = {}; }
+  }
+
+  const token = String((body ?? {}).token ?? '').trim();
 
   const validToken = crypto
-    .createHmac('sha256', AUTH_SECRET)
-    .update(AUTH_USERNAME)
+    .createHmac('sha256', AUTH_SECRET.trim())
+    .update(AUTH_USERNAME.trim())
     .digest('hex');
 
   if (token !== validToken) {
