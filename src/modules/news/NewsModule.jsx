@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNews } from '../../hooks/useNews.js';
 import { useSwipeBack } from '../../hooks/useSwipeBack.js';
+import { usePullToRefresh } from '../../hooks/usePullToRefresh.js';
 import { useSettingsStore, PROVIDER_CATALOG } from '../../store/settingsStore.js';
 import StoryCard from './components/StoryCard.jsx';
 import ArticleReader from './components/ArticleReader.jsx';
@@ -323,6 +324,10 @@ export default function NewsModule() {
     );
   }
 
+  // ─── Pull-to-refresh ──────────────────────────────────────────────────────
+  const { containerRef: pullRef, pullDistance, isTriggered, isRefreshing: isPullRefreshing }
+    = usePullToRefresh(refresh, activeTab !== 'saved');
+
   // ─── Vista principal: feed ─────────────────────────────────────────────────
   const emptyMessages = {
     unread: 'Todo al día. No hay noticias sin leer.',
@@ -331,13 +336,13 @@ export default function NewsModule() {
   };
 
   return (
-    <div className={styles.view}>
+    <div ref={pullRef} className={styles.view}>
       <header className={styles.header}>
         <h1 className={styles.headerTitle}>Noticias</h1>
         <button
-          className={[styles.refreshBtn, refreshing ? styles.refreshing : ''].join(' ')}
+          className={[styles.refreshBtn, (refreshing || isPullRefreshing) ? styles.refreshing : ''].join(' ')}
           onClick={refresh}
-          disabled={loading || refreshing}
+          disabled={loading || refreshing || isPullRefreshing}
           aria-label="Actualizar"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -347,7 +352,36 @@ export default function NewsModule() {
         </button>
       </header>
 
-      {/* Banner de recordatorio de exportar */}
+      {/* Indicador pull-to-refresh */}
+      {(pullDistance > 0 || isPullRefreshing) && (
+        <div
+          className={styles.pullIndicatorWrap}
+          style={{
+            height: `${pullDistance}px`,
+            transition: isPullRefreshing ? 'none' : pullDistance === 0 ? 'height 0.3s ease' : 'none',
+          }}
+        >
+          <div className={[
+            styles.pullIndicator,
+            isTriggered || isPullRefreshing ? styles.pullIndicatorTriggered : '',
+          ].join(' ')}>
+            <svg
+              width="20" height="20" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" strokeWidth="2.2"
+              strokeLinecap="round" strokeLinejoin="round"
+              className={(isTriggered || isPullRefreshing) ? styles.pullSpinning : ''}
+              style={{
+                transform: !isTriggered && !isPullRefreshing
+                  ? `rotate(${Math.round((pullDistance / 72) * 360)}deg)`
+                  : undefined,
+              }}
+            >
+              <path d="M23 4v6h-6M1 20v-6h6"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+          </div>
+        </div>
+      )}
       {showExportBanner && (
         <div className={styles.exportBanner}>
           <span className={styles.exportBannerText}>

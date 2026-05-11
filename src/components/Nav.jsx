@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useKeyboard } from '../hooks/useKeyboard.js';
 import styles from './Nav.module.css';
@@ -40,43 +39,24 @@ const NAV_ITEMS = [
   },
 ];
 
+/**
+ * Nav — barra de navegación inferior.
+ *
+ * El posicionamiento lo gestiona el contenedor raíz (.app) que en App.jsx
+ * se sincroniza con el visualViewport. Como .app tiene transform, los
+ * elementos position:fixed hijos se anclan a .app (no al viewport nativo),
+ * lo que es exactamente lo que queremos: la nav siempre queda en el borde
+ * inferior del área visible.
+ *
+ * Cuando el teclado está abierto se oculta completamente.
+ */
 export default function Nav() {
   const { keyboardOpen } = useKeyboard();
-  const navRef = useRef(null);
 
-  /**
-   * Reposicionar la nav usando visualViewport para que siempre quede pegada
-   * al borde inferior VISIBLE, independientemente del estado del teclado o
-   * de cualquier scroll del layout viewport que haga iOS al abrir inputs.
-   */
-  useEffect(() => {
-    const vv  = window.visualViewport;
-    const nav = navRef.current;
-    if (!vv || !nav) return;
-
-    function reposition() {
-      // offsetTop: cuánto ha scrollado el layout viewport hacia arriba (iOS lo hace al enfocar inputs)
-      // height: altura del área visible (excluye teclado)
-      const top = vv.offsetTop + vv.height;
-      // Mover la nav al borde inferior del área visible
-      nav.style.transform = `translateY(${-(window.innerHeight - top)}px)`;
-    }
-
-    vv.addEventListener('resize', reposition);
-    vv.addEventListener('scroll', reposition);
-    reposition();
-
-    return () => {
-      vv.removeEventListener('resize', reposition);
-      vv.removeEventListener('scroll', reposition);
-    };
-  }, []);
-
-  // Ocultar completamente cuando el teclado está abierto
   if (keyboardOpen) return null;
 
   return (
-    <nav ref={navRef} className={styles.nav} role="navigation" aria-label="Navegación principal">
+    <nav className={styles.nav} role="navigation" aria-label="Navegación principal">
       {NAV_ITEMS.map(({ to, label, icon }) => (
         <NavLink
           key={to}
